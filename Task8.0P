@@ -1,0 +1,48 @@
+#include "USART_DEAKIN.h"
+
+USART_DEAKIN mySerial;
+
+static void printMenu() {
+  Serial.println("=== Arduino Nano 33 IoT Menu ===");
+  Serial.println("a) Display GPIO Port A state");
+  Serial.println("b) Display GPIO Port B state");
+  Serial.println("h) Help / Show menu");
+  Serial.println();
+}
+
+static void dumpPortStates(uint8_t groupIndex, const char* label) {
+  Serial.print(label); Serial.println(" States:");
+  for (int i = 0; i < 32; i++) {
+    bool dir = (PORT->Group[groupIndex].DIR.reg >> i) & 1;
+    bool out = (PORT->Group[groupIndex].OUT.reg >> i) & 1;
+    Serial.print(label); Serial.print(i);
+    Serial.print(": "); Serial.print(dir ? "OUT" : "IN");
+    Serial.print(", "); Serial.println(out ? "HIGH" : "LOW");
+  }
+  Serial.println();
+}
+
+void setup() {
+  Serial.begin(9600);
+  while (!Serial) {}                 // wait for USB
+  mySerial.begin(9600, 8, 1, 'N');   // stub does nothing yet, but OK
+  mySerial.print("USART_DEAKIN stub ready\r\n");
+  printMenu();
+}
+
+void loop() {
+  // If you want to echo what you type in Serial Monitor, uncomment this:
+  // mySerial.forwardFromUsbOnce();
+
+  if (Serial.available()) {
+    char option = Serial.read();
+    if (option == '\r' || option == '\n') return;
+
+    switch (option) {
+      case 'a': dumpPortStates(0, "PA"); break;
+      case 'b': dumpPortStates(1, "PB"); break;
+      case 'h': default: break;
+    }
+    printMenu();
+  }
+}
